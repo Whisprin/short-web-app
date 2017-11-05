@@ -1,3 +1,5 @@
+#!/usr/bin/env electron
+
 const electron = require('electron')
 const {
   app,
@@ -5,37 +7,53 @@ const {
   globalShortcut,
   Menu,
   MenuItem,
-  ipcMain,
-  ipcRenderer
+  ipcMain
 } = require('electron')
+const argv = require('minimist')(process.argv.slice(2));
 
 const path = require('path')
 const url = require('url')
+const types = {
+  airsonic: {
+    name: 'Airsonic'
+  },
+  qobuz: {
+    name: 'Qobuz',
+    url: 'http://play.qobuz.com/'
+  }
+}
 
 let mainWindow
 
 function createWindow () {
   // TOOD: Restore previous window size
-  mainWindow = new BrowserWindow({width: 800, height: 600})
+  mainWindow = new BrowserWindow({width: 1920, height: 1080})
 
   //mainWindow.webContents.openDevTools()
 
-  addPreferencesMenu()
+  console.log(argv)
+
+  siteType = argv.type
+  siteUrl = argv.url
+
+  // remove the menu altogether
+  Menu.setApplicationMenu(null)
+
+  // if the user didn't specifiy a type or a type which doesn't have a url
+  if (!siteType || (!('url' in types[siteType]) && !siteUrl)) {
+    showPreferences()
+  } else {
+    if (!siteUrl) {
+      siteUrl = types[siteType].url
+    }
+    loadWebsite(siteUrl, siteType)
+  }
 
   mainWindow.on('closed', function () {
     mainWindow = null
   })
 }
 
-function addPreferencesMenu () {
-  menu = Menu.getApplicationMenu()
-  menuItem = new MenuItem({label: 'Preferences', click (menuItem, browserWindow, event) { 
-    console.log('Preferences clicked')
-    showPreferences()
-  }})
-  menu.append(menuItem)
-  Menu.setApplicationMenu(menu)
-}
 
 function showPreferences () {
   mainWindow.loadURL(url.format({
@@ -68,14 +86,14 @@ app.on('activate', function () {
 
 ipcMain.on('set-website', function (event, arg) {
   console.log(arg)
-  loadWebsite(arg.url)
-  registerShortcuts(arg.type)
+  loadWebsite(arg.url, arg.type)
 });
 
-function loadWebsite (url) {
+function loadWebsite (url, type) {
   // TODO: Retrieve fav icon from website, cache it locally and set as window icon
   //mainWindow.setIcon(icon)
   mainWindow.loadURL(url)
+  registerShortcuts(type)
 }
 
 function registerShortcuts (type) {
