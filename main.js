@@ -18,7 +18,7 @@ function createWindow () {
   // TOOD: Restore previous window size
   mainWindow = new BrowserWindow({width: 800, height: 600})
 
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
 
   mainWindow.on('closed', function () {
     mainWindow = null
@@ -81,9 +81,23 @@ function registerShortcuts (type) {
 
   globalShortcut.register('MediaPlayPause', function() { 
     console.log('Play Pause')
-    mainWindow.webContents.send('space')
+    pressWebsiteKey('Space')
   })
-  globalShortcut.register('MediaStop', function() { console.log('Stop'); })
-  globalShortcut.register('MediaPreviousTrack', function() { console.log('Previous Track'); })
-  globalShortcut.register('MediaNextTrack', function() { console.log('Next Track'); })
+  globalShortcut.register('MediaStop', function() {
+    console.log('Stop')
+    pressWebsiteKey('Space')
+  })
+  globalShortcut.register('MediaPreviousTrack', function() {
+    console.log('Previous Track')
+    pressWebsiteKey('Left')
+  })
+  globalShortcut.register('MediaNextTrack', function() {
+    console.log('Next Track');
+    pressWebsiteKey('Right')
+  })
+}
+
+function pressWebsiteKey (key) {
+  mainWindow.webContents.sendInputEvent({type: 'keyDown', keyCode: key})
+  mainWindow.webContents.sendInputEvent({type: 'keyUp', keyCode: key})
 }
