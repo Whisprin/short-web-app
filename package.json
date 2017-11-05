@@ -1,0 +1,24 @@
+{
+  "name": "shortwebapp",
+  "version": "1.0.0",
+  "description": "Launch any website as a standalone application utilizing OS global shortcuts",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/Whisprin/shortwebapp",
+  "keywords": [
+    "Electron",
+    "Launcher",
+    "Spotify",
+    "Music",
+    "Shortcut",
+    "Media",
+    "Play"
+  ],
+  "author": "Whisprin",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "electron": "~1.7.8"
+  }
+}
