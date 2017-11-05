@@ -20,6 +20,8 @@ function createWindow () {
 
   //mainWindow.webContents.openDevTools()
 
+  addPreferencesMenu()
+
   mainWindow.on('closed', function () {
     mainWindow = null
   })
