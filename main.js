@@ -5,7 +5,8 @@ const {
   globalShortcut,
   Menu,
   MenuItem,
-  ipcMain
+  ipcMain,
+  ipcRenderer
 } = require('electron')
 
 const path = require('path')
@@ -17,23 +18,11 @@ function createWindow () {
   // TOOD: Restore previous window size
   mainWindow = new BrowserWindow({width: 800, height: 600})
 
-  globalShortcut.register('MediaPlayPause', function() { console.log('Play Pause'); })
-  globalShortcut.register('MediaStop', function() { console.log('Stop'); })
-  globalShortcut.register('MediaPreviousTrack', function() { console.log('Previous Track'); })
-  globalShortcut.register('MediaNextTrack', function() { console.log('Next Track'); })
-
-  addPreferencesMenu()
-  showWebsite('http://play.qobuz.com')
-
   mainWindow.webContents.openDevTools()
 
   mainWindow.on('closed', function () {
     mainWindow = null
   })
-}
-
-function showWebsite (url) {
-  mainWindow.loadURL(url)
 }
 
 function addPreferencesMenu () {
@@ -75,7 +64,26 @@ app.on('activate', function () {
   }
 })
 
-ipcMain.on('show-website', function (event, arg) {
+ipcMain.on('set-website', function (event, arg) {
   console.log(arg)
-  showWebsite(arg.url)
+  loadWebsite(arg.url)
+  registerShortcuts(arg.type)
 });
+
+function loadWebsite (url) {
+  // TODO: Retrieve fav icon from website, cache it locally and set as window icon
+  //mainWindow.setIcon(icon)
+  mainWindow.loadURL(url)
+}
+
+function registerShortcuts (type) {
+  console.log('Registering shortcuts for: ' + type)
+
+  globalShortcut.register('MediaPlayPause', function() { 
+    console.log('Play Pause')
+    mainWindow.webContents.send('space')
+  })
+  globalShortcut.register('MediaStop', function() { console.log('Stop'); })
+  globalShortcut.register('MediaPreviousTrack', function() { console.log('Previous Track'); })
+  globalShortcut.register('MediaNextTrack', function() { console.log('Next Track'); })
+}

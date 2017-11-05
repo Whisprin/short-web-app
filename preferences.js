@@ -6,5 +6,8 @@ const remote = require('electron').remote
 const {ipcRenderer} = require('electron')
 
 document.getElementById('launch-btn').addEventListener('click', function (e) {
-  ipcRenderer.send('show-website', {url: document.getElementById('url-input').value})
+  ipcRenderer.send('set-website', {
+    url: document.getElementById('url-input').value,
+    type: document.getElementById('select-type').value
+  })
 });
