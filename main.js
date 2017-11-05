@@ -1,50 +1,61 @@
 const electron = require('electron')
-// Module to control application life.
-const app = electron.app
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow
-//
-const globalShortcut = electron.globalShortcut
+const {
+  app,
+  BrowserWindow,
+  globalShortcut,
+  Menu,
+  MenuItem,
+  ipcMain
+} = require('electron')
 
 const path = require('path')
 const url = require('url')
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
 function createWindow () {
-  // Create the browser window.
   // TOOD: Restore previous window size
   mainWindow = new BrowserWindow({width: 800, height: 600})
-
-  // and load the index.html of the app.
-  mainWindow.loadURL(url.format({
-    pathname: 'play.qobuz.com',
-    protocol: 'http:',
-    slashes: true
-  }))
 
   globalShortcut.register('MediaPlayPause', function() { console.log('Play Pause'); })
   globalShortcut.register('MediaStop', function() { console.log('Stop'); })
   globalShortcut.register('MediaPreviousTrack', function() { console.log('Previous Track'); })
   globalShortcut.register('MediaNextTrack', function() { console.log('Next Track'); })
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  addPreferencesMenu()
+  showWebsite('http://play.qobuz.com')
 
-  // Emitted when the window is closed.
+  mainWindow.webContents.openDevTools()
+
   mainWindow.on('closed', function () {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
     mainWindow = null
   })
 }
 
+function showWebsite (url) {
+  mainWindow.loadURL(url)
+}
+
+function addPreferencesMenu () {
+  menu = Menu.getApplicationMenu()
+  menuItem = new MenuItem({label: 'Preferences', click (menuItem, browserWindow, event) { 
+    console.log('Preferences clicked')
+    showPreferences()
+  }})
+  menu.append(menuItem)
+  Menu.setApplicationMenu(menu)
+}
+
+function showPreferences () {
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'preferences.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on('ready', createWindow)
 
 // Quit when all windows are closed.
@@ -64,5 +75,7 @@ app.on('activate', function () {
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+ipcMain.on('show-website', function (event, arg) {
+  console.log(arg)
+  showWebsite(arg.url)
+});
