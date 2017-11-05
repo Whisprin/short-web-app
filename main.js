@@ -17,15 +17,21 @@ const types = {
   airsonic: {
     name: 'Airsonic',
     bindings: {
-      playPause: 'Space',
-      stop: 'Space',
-      previousTrack: 'Left',
-      nextTrack: 'Right'
+      MediaPlayPause: 'Space',
+      MediaStop: 'Space',
+      MediaPreviousTrack: 'Left',
+      MediaNextTrack: 'Right'
     }
   },
   qobuz: {
     name: 'Qobuz',
-    url: 'http://play.qobuz.com/'
+    url: 'http://play.qobuz.com/',
+    bindings: {
+      MediaPlayPause: 'Space',
+      MediaStop: 'Space',
+      MediaPreviousTrack: 'control Left',
+      MediaNextTrack: 'control Right'
+    }
   }
 }
 
@@ -36,8 +42,6 @@ function createWindow () {
   mainWindow = new BrowserWindow({width: 1920, height: 1080})
 
   //mainWindow.webContents.openDevTools()
-
-  console.log(argv)
 
   siteType = argv.type
   siteUrl = argv.url
@@ -91,7 +95,6 @@ app.on('activate', function () {
 })
 
 ipcMain.on('set-website', function (event, arg) {
-  console.log(arg)
   loadWebsite(arg.url, arg.type)
 });
 
@@ -105,25 +108,19 @@ function loadWebsite (url, type) {
 function registerShortcuts (type) {
   console.log('Registering shortcuts for: ' + type)
 
-  globalShortcut.register('MediaPlayPause', function() { 
-    console.log('Play Pause')
-    pressWebsiteKey(types[type].bindings.playPause)
-  })
-  globalShortcut.register('MediaStop', function() {
-    console.log('Stop')
-    pressWebsiteKey(types[type].bindings.stop)
-  })
-  globalShortcut.register('MediaPreviousTrack', function() {
-    console.log('Previous Track')
-    pressWebsiteKey(types[type].bindings.previousTrack)
-  })
-  globalShortcut.register('MediaNextTrack', function() {
-    console.log('Next Track');
-    pressWebsiteKey(types[type].bindings.nextTrack)
-  })
+  var bindings = types[type].bindings
+  for (var binding in bindings) {
+    !function outer(b) {
+      globalShortcut.register(binding, () => {
+        pressWebsiteKeys(b.split(' '))
+      })
+    }(bindings[binding])
+  }
 }
 
-function pressWebsiteKey (key) {
-  mainWindow.webContents.sendInputEvent({type: 'keyDown', keyCode: key})
-  mainWindow.webContents.sendInputEvent({type: 'keyUp', keyCode: key})
+function pressWebsiteKeys (keys) {
+  keyCode = keys.pop()
+  console.log(keyCode, keys)
+  mainWindow.webContents.sendInputEvent({type: 'keyDown', keyCode: keyCode, modifieres: keys})
+  mainWindow.webContents.sendInputEvent({type: 'keyUp', keyCode: keyCode, modifieres: keys})
 }
