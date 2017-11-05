@@ -15,7 +15,13 @@ const path = require('path')
 const url = require('url')
 const types = {
   airsonic: {
-    name: 'Airsonic'
+    name: 'Airsonic',
+    bindings: {
+      playPause: 'Space',
+      stop: 'Space',
+      previousTrack: 'Left',
+      nextTrack: 'Right'
+    }
   },
   qobuz: {
     name: 'Qobuz',
@@ -101,19 +107,19 @@ function registerShortcuts (type) {
 
   globalShortcut.register('MediaPlayPause', function() { 
     console.log('Play Pause')
-    pressWebsiteKey('Space')
+    pressWebsiteKey(types[type].bindings.playPause)
   })
   globalShortcut.register('MediaStop', function() {
     console.log('Stop')
-    pressWebsiteKey('Space')
+    pressWebsiteKey(types[type].bindings.stop)
   })
   globalShortcut.register('MediaPreviousTrack', function() {
     console.log('Previous Track')
-    pressWebsiteKey('Left')
+    pressWebsiteKey(types[type].bindings.previousTrack)
   })
   globalShortcut.register('MediaNextTrack', function() {
     console.log('Next Track');
-    pressWebsiteKey('Right')
+    pressWebsiteKey(types[type].bindings.nextTrack)
   })
 }
 
