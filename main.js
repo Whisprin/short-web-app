@@ -28,7 +28,7 @@ const types = {
     url: 'http://play.qobuz.com/',
     bindings: {
       MediaPlayPause: 'Space',
-      MediaStop: 'Space',
+      MediaStop: 'Backspace',
       MediaPreviousTrack: 'control Left',
       MediaNextTrack: 'control Right'
     }
@@ -64,7 +64,6 @@ function createWindow () {
   })
 }
 
-
 function showPreferences () {
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'preferences.html'),
@@ -94,33 +93,50 @@ app.on('activate', function () {
   }
 })
 
+app.on('browser-window-focus', () => {
+  console.log('focus')
+  registerShortcuts(argv.type)
+})
+
 ipcMain.on('set-website', function (event, arg) {
   loadWebsite(arg.url, arg.type)
-});
+})
 
 function loadWebsite (url, type) {
   // TODO: Retrieve fav icon from website, cache it locally and set as window icon
   //mainWindow.setIcon(icon)
   mainWindow.loadURL(url)
-  registerShortcuts(type)
+  //showPreferences()
+
+  globalShortcut.unregisterAll()
+  setTimeout(() => registerShortcuts, 100, type)
 }
 
 function registerShortcuts (type) {
   console.log('Registering shortcuts for: ' + type)
 
-  var bindings = types[type].bindings
-  for (var binding in bindings) {
-    !function outer(b) {
-      globalShortcut.register(binding, () => {
-        pressWebsiteKeys(b.split(' '))
-      })
-    }(bindings[binding])
-  }
+  var binding = types[type].bindings
+
+  globalShortcut.unregisterAll()
+  globalShortcut.register('MediaPlayPause', () => {
+    pressWebsiteKeys(type, binding.MediaPlayPause)
+    setTimeout(() => registerShortcuts, 100, type)
+  })
+  globalShortcut.register('MediaStop', () => {
+    pressWebsiteKeys(type, binding.MediaStop)
+  })
+  globalShortcut.register('MediaPreviousTrack', () => {
+    pressWebsiteKeys(type, binding.MediaPreviousTrack)
+  })
+  globalShortcut.register('MediaNextTrack', () => {
+    pressWebsiteKeys(type, binding.MediaNextTrack)
+  })
 }
 
-function pressWebsiteKeys (keys) {
+function pressWebsiteKeys (type, binding) {
+  console.log(binding)
+  keys = binding.split(' ')
   keyCode = keys.pop()
-  console.log(keyCode, keys)
-  mainWindow.webContents.sendInputEvent({type: 'keyDown', keyCode: keyCode, modifieres: keys})
-  mainWindow.webContents.sendInputEvent({type: 'keyUp', keyCode: keyCode, modifieres: keys})
+  mainWindow.webContents.sendInputEvent({type: 'keyDown', keyCode: keyCode, modifiers: keys})
+  mainWindow.webContents.sendInputEvent({type: 'keyUp', keyCode: keyCode, modifiers: keys})
 }
